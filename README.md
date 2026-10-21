@@ -8,6 +8,10 @@ Everything is in `public/index.html`. Each link is an `<a class="card">` with an
 
 If I change the name, title or projects, I also update the `<title>`, meta description and Open Graph tags at the top, then regenerate the social preview image (see below).
 
+## QR code
+
+The QR button at the top right of the page opens a panel showing a QR code for the site, so I can hold my phone up for people to scan. The code is a static image (`public/qr.svg`), and print copies live in `qr/` (an SVG and a 2048px PNG). If the site's URL ever changes, I update `siteUrl` in `tests/generate-qr.mjs` and `qrUrl` in `tests/check.mjs`, then run `npm run qr`.
+
 ## Running it locally
 
 ```sh
@@ -23,9 +27,10 @@ The checks live in `tests/` and are never deployed. With `wrangler dev` running:
 ```sh
 cd tests
 npm install
-npm run check        # screenshots at 320–1280px, fits one screen, 48px tap targets, link status
+npm run check        # screenshots at 320–1280px, fits one screen, 48px tap targets, QR decodes, link status
 npm run lighthouse   # mobile Lighthouse scores
 npm run images       # regenerate favicon PNGs and og.png
+npm run qr           # regenerate the QR code
 ```
 
 Both `check` and `lighthouse` take an optional URL, so I can point them at the live site too. Screenshots and the Lighthouse report go into gitignored folders inside `tests/`.

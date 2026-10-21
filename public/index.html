@@ -62,7 +62,13 @@ main {
 }
 
 /* Header */
-header { margin-bottom: 1.5rem; }
+header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
 h1 {
   margin: 0;
   font-size: clamp(2.125rem, 8vw + 0.25rem, 3rem);
@@ -131,7 +137,53 @@ a { color: inherit; text-decoration: none; }
 .profile svg { width: 20px; height: 20px; flex: none; }
 .profile:active { transform: scale(0.97); background: var(--surface); border-color: var(--ink); }
 
-a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+/* QR code */
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.qr-open {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  transition: transform 120ms ease-out, background-color 120ms ease-out, border-color 120ms ease-out;
+}
+.qr-open svg { width: 22px; height: 22px; }
+.qr-open:active { transform: scale(0.95); background: var(--surface); border-color: var(--ink); }
+#qr {
+  width: min(22rem, calc(100vw - 2rem));
+  padding: 1rem 1rem 1.125rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: center;
+}
+#qr::backdrop { background: rgb(20 23 29 / 0.6); }
+#qr img { display: block; width: 100%; height: auto; }
+.qr-title { margin: 0.5rem 0 0; font-weight: 650; }
+.qr-url { margin: 0.125rem 0 1rem; color: var(--muted); font-size: 1rem; overflow-wrap: anywhere; }
+.qr-close {
+  width: 100%;
+  min-height: 52px;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #FFFFFF;
+  font-weight: 650;
+}
+.qr-close:active { background: #1C34AE; }
+@supports not selector(:popover-open) {
+  .qr-open, #qr { display: none; }
+}
+
+a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
 @media (max-width: 359px) {
   .card { grid-template-columns: 1fr; }
@@ -146,11 +198,11 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
   .profiles { margin-top: 1rem; }
 }
 @media (hover: hover) {
-  .card:hover, .profile:hover { border-color: var(--accent); }
+  .card:hover, .profile:hover, .qr-open:hover { border-color: var(--accent); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .card, .profile { transition: none; }
-  .card:active, .profile:active { transform: none; }
+  .card, .profile, .qr-open { transition: none; }
+  .card:active, .profile:active, .qr-open:active { transform: none; }
 }
 </style>
 </head>
@@ -158,6 +210,9 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 <main>
   <header>
     <h1>Kieron Oates<span class="sr-only"> – </span><span class="role">Software Engineer</span></h1>
+    <button class="qr-open" type="button" popovertarget="qr" aria-label="Show QR code for this page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h.01M17 21h4v-4"/></svg>
+    </button>
   </header>
 
   <nav aria-label="My work">
@@ -200,6 +255,13 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
       </a>
     </div>
   </nav>
+
+  <div id="qr" popover role="dialog" aria-labelledby="qr-title">
+    <img src="/qr.svg" width="320" height="320" alt="QR code linking to qr-site.kieronoates.workers.dev">
+    <p class="qr-title" id="qr-title">Scan to open this page</p>
+    <p class="qr-url">qr-site.kieronoates.workers.dev</p>
+    <button class="qr-close" type="button" popovertarget="qr" popovertargetaction="hide">Close</button>
+  </div>
 </main>
 </body>
 </html>

@@ -3,8 +3,11 @@
 import { chromium } from 'playwright';
 import { mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import jsQR from 'jsqr';
+import { PNG } from 'pngjs';
 
 const baseUrl = process.argv[2] ?? 'http://localhost:8787';
+const qrUrl = 'https://qr-site.kieronoates.workers.dev';
 // Heights are the visible area left by the browser's toolbars on common phones,
 // so the homepage must fit without scrolling at each one.
 const viewports = [[320, 568], [360, 640], [390, 664], [430, 740], [1280, 800]];
@@ -42,9 +45,9 @@ for (const path of ['/', '/404-check']) {
     const sameTab = await page.$$eval('a[href^="http"]:not([target="_blank"])', (links) => links.map((a) => a.href));
     for (const href of sameTab) failures.push(`${path}: ${href} doesn't open in a new tab`);
 
-    const smallTargets = await page.$$eval('a', (links, min) => links
-      .map((a) => ({ text: a.textContent.trim().replace(/\s+/g, ' '), box: a.getBoundingClientRect() }))
-      .filter(({ box }) => box.width < min || box.height < min)
+    const smallTargets = await page.$$eval('a, button', (targets, min) => targets
+      .map((el) => ({ text: el.getAttribute('aria-label') ?? el.textContent.trim().replace(/\s+/g, ' '), box: el.getBoundingClientRect() }))
+      .filter(({ box }) => box.width > 0 && (box.width < min || box.height < min))
       .map(({ text, box }) => `"${text}" ${Math.round(box.width)}x${Math.round(box.height)}`), minTarget);
     for (const target of smallTargets) failures.push(`${path} @${width}px: tap target too small: ${target}`);
 
@@ -52,13 +55,31 @@ for (const path of ['/', '/404-check']) {
   }
 }
 
+// The QR button opens the panel, and the code shown decodes to the site's own URL.
+const qrContext = await browser.newContext({ viewport: { width: 390, height: 664 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+const qrPage = await qrContext.newPage();
+await qrPage.goto(baseUrl + '/');
+await qrPage.tap('.qr-open');
+await qrPage.waitForSelector('#qr:popover-open');
+await qrPage.screenshot({ path: `${shotsDir}qr-open-390.png` });
+const qrImage = PNG.sync.read(await qrPage.locator('#qr img').screenshot());
+const decoded = jsQR(new Uint8ClampedArray(qrImage.data), qrImage.width, qrImage.height)?.data;
+console.log(`QR code decodes to: ${decoded}`);
+if (decoded !== qrUrl) failures.push(`QR code decodes to ${decoded}, expected ${qrUrl}`);
+const qrSmallTargets = await qrPage.$$eval('#qr button', (buttons, min) => buttons
+  .filter((b) => b.getBoundingClientRect().height < min).length, minTarget);
+if (qrSmallTargets) failures.push('QR panel close button is under 48px');
+await qrPage.tap('.qr-close');
+if (await qrPage.$('#qr:popover-open')) failures.push('QR panel did not close');
+await qrContext.close();
+
 // Every link on the homepage must resolve. LinkedIn answers automated requests with
 // status 999 even from a headless browser, so that one is a warning to check by hand.
 const warnings = [];
 const page = await browser.newPage();
 await page.goto(baseUrl + '/');
 const hrefs = await page.$$eval('a', (links) => links.map((a) => a.href));
-const assets = ['/favicon.svg', '/favicon-32.png', '/apple-touch-icon.png', '/og.png', '/robots.txt', '/sitemap.xml']
+const assets = ['/favicon.svg', '/favicon-32.png', '/apple-touch-icon.png', '/og.png', '/qr.svg', '/robots.txt', '/sitemap.xml']
   .map((asset) => baseUrl + asset);
 
 for (const url of [...hrefs, ...assets]) {
