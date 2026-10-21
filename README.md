@@ -1,0 +1,37 @@
+# qr-site
+
+This is the page people land on when they scan the QR code on my CV or business card. It links to my portfolio, my projects, GitHub and LinkedIn. It's plain HTML and CSS with no JavaScript, served from Cloudflare Workers static assets.
+
+## Updating the links
+
+Everything is in `public/index.html`. Each link is an `<a class="card">` with a name and a one-line description, so I edit the `href` and text there. To add a project I copy one of the cards inside `<div class="projects">`. The grid is two columns, so an even number of projects looks best.
+
+If I change the name, title or projects, I also update the `<title>`, meta description and Open Graph tags at the top, then regenerate the social preview image (see below).
+
+## Running it locally
+
+```sh
+npx wrangler dev
+```
+
+That serves `public/` at http://localhost:8787, with `public/404.html` for unknown paths, the same as it works when deployed.
+
+## Tests
+
+The checks live in `tests/` and are never deployed. With `wrangler dev` running:
+
+```sh
+cd tests
+npm install
+npm run check        # screenshots at 320–1280px, overflow, 48px tap targets, link status
+npm run lighthouse   # mobile Lighthouse scores
+npm run images       # regenerate favicon PNGs and og.png
+```
+
+Both `check` and `lighthouse` take an optional URL, so I can point them at the live site too. Screenshots and the Lighthouse report go into gitignored folders inside `tests/`.
+
+## Deploying
+
+```sh
+npx wrangler deploy
+```
