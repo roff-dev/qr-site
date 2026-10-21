@@ -17,9 +17,9 @@ font-family:${font};display:flex;flex-direction:column;justify-content:space-bet
     <div style="margin-top:24px;font-size:48px;font-weight:500;color:#4E5563">Software Engineer</div>
   </div>
   <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:30px;font-weight:600">
-    <span style="background:#2340D0;color:#fff;padding:14px 28px;border-radius:999px">Portfolio</span>
+    <span style="background:#2340D0;color:#fff;padding:14px 28px;border-radius:14px">Portfolio</span>
     ${['Perfect Balance', 'Overhead', 'Wikiracer', 'Handwriting Font'].map(
-      (name) => `<span style="background:#fff;border:2px solid #D3D8E0;padding:12px 26px;border-radius:999px">${name}</span>`
+      (name) => `<span style="background:#fff;border:2px solid #D3D8E0;padding:12px 26px;border-radius:14px">${name}</span>`
     ).join('')}
   </div>
 </div></body></html>`;

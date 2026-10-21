@@ -50,7 +50,7 @@ const warnings = [];
 const page = await browser.newPage();
 await page.goto(baseUrl + '/');
 const hrefs = await page.$$eval('a', (links) => links.map((a) => a.href));
-const assets = ['/favicon.svg', '/favicon-32.png', '/apple-touch-icon.png', '/og.png', '/robots.txt']
+const assets = ['/favicon.svg', '/favicon-32.png', '/apple-touch-icon.png', '/og.png', '/robots.txt', '/sitemap.xml']
   .map((asset) => baseUrl + asset);
 
 for (const url of [...hrefs, ...assets]) {
