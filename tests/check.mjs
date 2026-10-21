@@ -5,7 +5,9 @@ import { mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const baseUrl = process.argv[2] ?? 'http://localhost:8787';
-const widths = [320, 360, 390, 430, 1280];
+// Heights are the visible area left by the browser's toolbars on common phones,
+// so the homepage must fit without scrolling at each one.
+const viewports = [[320, 568], [360, 640], [390, 664], [430, 740], [1280, 800]];
 const minTarget = 48;
 const shotsDir = fileURLToPath(new URL('./.screenshots/', import.meta.url));
 await mkdir(shotsDir, { recursive: true });
@@ -14,9 +16,9 @@ const failures = [];
 const browser = await chromium.launch();
 
 for (const path of ['/', '/404-check']) {
-  for (const width of widths) {
+  for (const [width, height] of viewports) {
     const context = await browser.newContext({
-      viewport: { width, height: width >= 1024 ? 800 : 780 },
+      viewport: { width, height },
       isMobile: width < 1024,
       hasTouch: width < 1024,
       deviceScaleFactor: 2,
@@ -33,6 +35,12 @@ for (const path of ['/', '/404-check']) {
 
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     if (overflow > 0) failures.push(`${path} @${width}px: horizontal overflow of ${overflow}px`);
+
+    const scroll = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
+    if (path === '/' && scroll > 0) failures.push(`/ @${width}x${height}: needs ${scroll}px of vertical scroll`);
+
+    const sameTab = await page.$$eval('a[href^="http"]:not([target="_blank"])', (links) => links.map((a) => a.href));
+    for (const href of sameTab) failures.push(`${path}: ${href} doesn't open in a new tab`);
 
     const smallTargets = await page.$$eval('a', (links, min) => links
       .map((a) => ({ text: a.textContent.trim().replace(/\s+/g, ' '), box: a.getBoundingClientRect() }))

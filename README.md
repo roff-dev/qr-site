@@ -4,7 +4,7 @@ This is the page people land on when they scan the QR code on my CV or business 
 
 ## Updating the links
 
-Everything is in `public/index.html`. Each link is an `<a class="card">` with a name and a one-line description, so I edit the `href` and text there. To add a project I copy one of the cards inside `<div class="projects">`. The grid is two columns, so an even number of projects looks best.
+Everything is in `public/index.html`. Each link is an `<a class="card">` with an icon, a name and a short description, so I edit the `href` and text there. To add a project I copy one of the cards inside `<div class="cards">`. The grid is two columns with the portfolio card spanning both (`class="card wide"`), so an even number of projects looks best. The page is meant to fit on one phone screen, so `npm run check` fails if a change makes it scroll.
 
 If I change the name, title or projects, I also update the `<title>`, meta description and Open Graph tags at the top, then regenerate the social preview image (see below).
 
@@ -23,7 +23,7 @@ The checks live in `tests/` and are never deployed. With `wrangler dev` running:
 ```sh
 cd tests
 npm install
-npm run check        # screenshots at 320–1280px, overflow, 48px tap targets, link status
+npm run check        # screenshots at 320–1280px, fits one screen, 48px tap targets, link status
 npm run lighthouse   # mobile Lighthouse scores
 npm run images       # regenerate favicon PNGs and og.png
 ```
